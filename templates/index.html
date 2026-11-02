@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScanScope — Multi-Model Medical Imaging Research Prototype</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="notice-banner" role="alert">
+        <div class="notice-content">
+            <span class="notice-icon">⚠️</span>
+            <p><strong>Educational Research Demo Only.</strong> This application cannot diagnose, screen for, or rule out cancer, pneumonia, or any other disease. Do not use it to make health decisions.</p>
+        </div>
+    </div>
+
+    <header class="app-header">
+        <div class="container">
+            <div class="brand-badge">Multi-Model AI Diagnostic Routing</div>
+            <h1 class="app-title">🔬 ScanScope</h1>
+            <p class="app-subtitle">Deep learning medical imaging research prototype routing tissue & thoracic radiographs to specialized neural architectures.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Step 1: Select Examination Type -->
+        <section class="card step-card" id="step-1">
+            <div class="step-header">
+                <span class="step-badge">1</span>
+                <h2>Select Examination Type</h2>
+            </div>
+            <p class="step-description">Choose a supported modality. Each pipeline invokes an independently trained neural model with validated parameters.</p>
+            <div id="exam-types-container" class="exam-types-grid"></div>
+        </section>
+
+        <!-- Step 2: Upload or Select Sample -->
+        <section class="card step-card disabled" id="step-2">
+            <div class="step-header">
+                <span class="step-badge">2</span>
+                <h2>Input Image & Sample Evaluation</h2>
+            </div>
+            <p class="step-description">Select from verified research samples (demonstrating both negative and positive findings) or upload an image patch.</p>
+
+            <!-- Curated Samples -->
+            <div class="samples-section" id="samples-section">
+                <div class="samples-header">
+                    <h3>Verified Research Demo Samples</h3>
+                    <span class="samples-sub">Labeled with known findings for testing</span>
+                </div>
+                <div class="samples-grid" id="samples-grid"></div>
+            </div>
+
+            <!-- Upload Area -->
+            <div class="upload-area" id="upload-area">
+                <div class="upload-content" id="upload-content">
+                    <span class="upload-icon">📂</span>
+                    <p class="upload-text">Or drag &amp; drop your own image patch</p>
+                    <p class="upload-hint">PNG, JPG, JPEG, BMP, TIF up to 10 MB (Processed locally, never retained)</p>
+                </div>
+                <div class="upload-preview hidden" id="upload-preview">
+                    <img id="preview-image" alt="Upload preview">
+                    <button class="btn btn-sm btn-secondary" id="clear-upload">Remove</button>
+                </div>
+                <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff" hidden>
+            </div>
+
+            <button class="btn btn-primary btn-analyze" id="analyze-btn" disabled>Run Research Inference</button>
+        </section>
+
+        <!-- Step 3: Results -->
+        <section class="card step-card hidden" id="step-3">
+            <div class="result-header-box">
+                <div class="step-header" style="margin-bottom: 0;">
+                    <span class="step-badge">3</span>
+                    <h2>Inference Output & Findings</h2>
+                </div>
+                <button class="btn btn-sm btn-secondary" id="reset-btn">Reset &amp; New Scan</button>
+            </div>
+
+            <div class="result-card-banner">
+                <p>⚠️ Research model classification only. <strong>This result is not a medical diagnosis.</strong> Normal scores do not rule out pathology, and high scores are uncalibrated model activations.</p>
+            </div>
+
+            <div class="result-error hidden" id="result-error">
+                <p id="error-message" style="color: #ef4444; font-weight: 600;"></p>
+            </div>
+
+            <div class="result-success hidden" id="result-success">
+                <div class="prediction-display-box">
+                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Assigned Research Label</span>
+                    <div id="prediction-label" class="prediction-badge">Normal</div>
+                    <p id="explanation-text" style="font-size: 0.85rem; color: var(--text-secondary); max-width: 650px; margin: 0.5rem auto 0;"></p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">Model Scores (Raw Activations)</h3>
+                    <div class="scores-container" id="scores-container"></div>
+                </div>
+            </div>
+
+            <div id="eval-metrics" class="hidden" style="margin-top: 1.5rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">Held-Out Test Set Performance</h3>
+                <div id="metrics-content"></div>
+            </div>
+
+            <div id="model-details" class="hidden" style="margin-top: 1.5rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">Architecture &amp; Dataset Provenance</h3>
+                <div class="details-grid" id="details-grid"></div>
+            </div>
+
+            <div id="limitations-section" class="limitations-box hidden">
+                <h3>⚠️ Documented Limitations</h3>
+                <ul id="limitations-list"></ul>
+            </div>
+        </section>
+
+        <!-- Educational Reference -->
+        <section class="card">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">How ScanScope Operates</h2>
+            <div class="how-grid">
+                <div class="how-item">
+                    <h3>Deterministic Routing</h3>
+                    <p>Routes inputs strictly to dedicated architectures. Histopathology patches map to ResNet-18 (Camelyon16), while thoracic radiographs route to Chest ResNet-18.</p>
+                </div>
+                <div class="how-item">
+                    <h3>Modality Preprocessing</h3>
+                    <p>Images undergo 224×224 bilinear scaling, 3-channel alignment, and ImageNet standardization to align with neural layer input bounds.</p>
+                </div>
+                <div class="how-item">
+                    <h3>Privacy & Security</h3>
+                    <p>Inference occurs locally on server CPU. Uploaded buffers are wiped from RAM and volatile storage immediately after inference.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>ScanScope — Medical Imaging Educational Prototype. Built for academic study only.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
